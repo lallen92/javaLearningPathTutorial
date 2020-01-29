@@ -4,8 +4,12 @@ import com.mpatric.mp3agic.ID3v2;
 import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
 import com.mpatric.mp3agic.UnsupportedTagException;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 
+import java.awt.*;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -18,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class Main
 {
-    public static void main(String[] args) throws InvalidPathException
+    public static void main(String[] args) throws Exception
     {
         boolean invalidPath = true;
         Scanner scanner = new Scanner(System.in);
@@ -83,6 +87,20 @@ public class Main
         catch (SQLException e)
         {
             e.printStackTrace();
+        }
+        Server server = new Server(8080);
+
+        ServletContextHandler context = new ServletContextHandler(
+                ServletContextHandler.SESSIONS);
+        context.setContextPath("/");
+        context.setResourceBase(System.getProperty("java.io.tmpdir"));
+        server.setHandler(context);
+
+        context.addServlet(SongServlet.class, "/songs");
+        server.start();
+
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().browse(new URI("http://localhost:8080/songs"));
         }
     }
 
